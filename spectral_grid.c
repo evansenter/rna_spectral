@@ -6,8 +6,8 @@
 #include <gsl/gsl_eigen.h>
 #include <gsl/gsl_linalg.h>
 #include "constants.h"
+#include "vienna_functions.h"
 #include "spectral_params.h"
-#include "spectral_grid.h"
 #include "spectral_functions.h"
 
 #define TIMING(start, stop, task) printf("Time in ms for %s: %.2f\n", task, (double)(((stop.tv_sec * 1000000 + stop.tv_usec) - (start.tv_sec * 1000000 + start.tv_usec)) / 1000.0));
@@ -104,49 +104,7 @@ int main(int argc, char* argv[]) {
   #endif
   
   if (parameters.energy_grid_file != NULL) {
-//     // int line_count = populate_arrays(parameters.energy_grid_file, &k, &l, &p);
-//     int j;
-//     int line_count = 35;
-//     int k[]        = { 0, 1, 1, 2, 2, 3, 3, 3, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 8, 8, 9 };
-//     int l[]        = { 9, 8, 10, 7, 11, 6, 8, 12, 5, 7, 9, 11, 13, 4, 6, 8, 10, 12, 14, 3, 5, 7, 9, 11, 13, 15, 2, 4, 6, 8, 10, 12, 1, 3, 0 };
-//     double p[]     = { 0.00003825, 0.00000004, 0.00000007, 0.00000124, 0.00000004, 0.00001218, 0.00000001, 0.00000024, 0.00008602, 0.00000015, 0.00000010, 0.00000003, 
-// 0.00000089, 0.00060800, 0.00000089, 0.00000090, 0.00000062, 0.00000019, 0.00000419, 0.00428014, 0.00000422, 0.00000410, 0.00000403, 0.00000274, 0.00000052, 0.00000027, 0.02995381, 0.00000922, 0.00001092, 0.00000789, 0.00001092, 0.00000298, 0.20470005, 0.00000001, 0.76025411 };
-//     
-//     if (parameters.verbose) {
-//       printf("line_count:\t%d\n", line_count);
-//       printf("file:\n");
-//       for (i = 0; i < line_count; ++i) {
-//         printf("%d\t%d\t%.8f\n", k[i], l[i], p[i]);
-//       }
-//     }
-//     
-//     num_structures = line_count;
-//     
-//     double col_sum;
-//     transition_matrix = malloc(num_structures * num_structures * sizeof(double));
-//   
-//     for (i = 0; i < num_structures; ++i) {
-//       col_sum = 0;
-//     
-//       for (j = 0; j < num_structures; ++j) {
-//         if (i != j) {
-//           transition_matrix[i + num_structures * j] = MIN(1., p[j] / p[i]);
-//           col_sum                                  += transition_matrix[i + num_structures * j];
-//         
-//           #ifdef INSANE_DEBUG
-//             printf("%d\t%d\t%.4e\n", i, j, transition_matrix[i + num_structures * j]);
-//           #endif
-//         }
-//       }
-//     
-//       #ifdef INSANE_DEBUG
-//         printf("%d col_sum:\t%.4e\n\n", i, col_sum);
-//       #endif
-//     
-//       transition_matrix[i * num_structures + i] = -col_sum;
-//     }
-//     
-//     print_matrix("transition_matrix", transition_matrix, num_structures);
+    // NYI
   } else {
     transition_matrix = convert_structures_to_transition_matrix(all_structures, num_structures, parameters.use_min);
   }

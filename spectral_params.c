@@ -94,9 +94,10 @@ SPECTRAL_PARAMS parse_spectral_args(int argc, char* argv[]) {
         parameters.use_min = 0;
       } else if (!strcmp(argv[i], "-eigen_only")) {
         parameters.eigen_only = 1;
-      } else if (!strcmp(argv[i], "-verbose")) {
+      } else if (!(strcmp(argv[i], "-verbose") && strcmp(argv[i], "-v"))) {
         parameters.verbose = 1;
       } else {
+        fprintf(stderr, "Error: %s flag not recognized.\n\n", argv[i]);
         spectral_usage();
       }
     }
@@ -116,11 +117,16 @@ SPECTRAL_PARAMS parse_spectral_args(int argc, char* argv[]) {
 int spectral_error_handling(SPECTRAL_PARAMS parameters) {
   int error = 0;
   
-  // if (parameters.sequence == NULL) {
-  //   fprintf(stderr, "Error: No sequence provided.\n");
-  //   error++;
-  // }
-  // 
+  if (parameters.sequence == NULL) {
+    fprintf(stderr, "Error: No sequence provided.\n");
+    error++;
+  }
+  
+  if (parameters.energy_grid_file != NULL) {
+    fprintf(stderr, "Error: energy_grid_file not yet implemented.\n");
+    error++;
+  }
+  
   // Also need error handling for the size of the structures, if provided.
   
   if (error) {
@@ -131,19 +137,20 @@ int spectral_error_handling(SPECTRAL_PARAMS parameters) {
 }
 
 void debug_spectral_parameters(SPECTRAL_PARAMS parameters) {
-  printf("parameters.sequence\t\t%s\n",       parameters.sequence);
-  printf("parameters.start_structure\t%s\n",  parameters.start_structure == NULL ? "empty" : parameters.start_structure);
-  printf("parameters.end_structure\t%s\n",    parameters.end_structure == NULL ? "mfe" : parameters.end_structure);
-  printf("parameters.energy_grid_file\t%s\n", parameters.energy_grid_file == NULL ? "none" : parameters.energy_grid_file);
-  printf("parameters.temperature\t\t%.1f\n",  parameters.temperature);
-  printf("parameters.start_time\t\t%.2e\n",   parameters.start_time);
-  printf("parameters.end_time\t\t%.2e\n",     parameters.end_time);
-  printf("parameters.step_size\t\t%.2e\n",    parameters.step_size);
-  printf("parameters.lonely_bp\t\t%s\n",      parameters.lonely_bp ? "No" : "Yes");
-  printf("parameters.energy_cap\t\t%s\n",     parameters.energy_cap ? "Yes" : "No");
-  printf("parameters.eigen_only\t\t%s\n",     parameters.eigen_only ? "Yes" : "No");
-  printf("parameters.use_min\t\t%s\n",        parameters.use_min ? "MIN(1, exp(-(E(j) - E(i)) / RT))" : "exp(-(E(j) - E(i)) / RT)");
-  printf("temperature\t\t\t%.1f\n",           temperature);
+  printf("sequence\t\t%s\n",             parameters.sequence);
+  printf("start_structure\t\t%s\n",      parameters.start_structure == NULL ? "empty" : parameters.start_structure);
+  printf("end_structure\t\t%s\n",        parameters.end_structure == NULL ? "mfe" : parameters.end_structure);
+  printf("energy_grid_file (NYI)\t%s\n", parameters.energy_grid_file == NULL ? "none" : parameters.energy_grid_file);
+  printf("temperature\t\t%.1f\n",        parameters.temperature);
+  printf("start_time\t\t%.2e\n",         parameters.start_time);
+  printf("end_time\t\t%.2e\n",           parameters.end_time);
+  printf("step_size\t\t%.2e\n",          parameters.step_size);
+  printf("lonely_bp\t\t%s\n",            parameters.lonely_bp ? "No" : "Yes");
+  printf("energy_cap\t\t%s\n",           parameters.energy_cap ? "Yes" : "No");
+  printf("eigen_only\t\t%s\n",           parameters.eigen_only ? "Yes" : "No");
+  printf("use_min\t\t\t%s\n",            parameters.use_min ? "MIN(1, exp(-(E(j) - E(i)) / RT))" : "exp(-(E(j) - E(i)) / RT)");
+  printf("temperature\t\t%.1f\n",        temperature);
+  printf("\n");
 }
 
 void spectral_usage() {
