@@ -25,12 +25,12 @@ ifeq "$(GCC_GTEQ_4.9.0)" "1"
 	CCFLAGS += -fdiagnostics-color=always
 endif
 	
-RNAspectral.out: spectral_grid.o spectral_params.o spectral_functions.o
-	$(CC) spectral_grid.o spectral_params.o spectral_functions.o -lRNA $(LDFLAGS) RNAspectral.out
+RNAspectral.out: rna_spectral.o spectral_params.o spectral_functions.o
+	$(CC) rna_spectral.o spectral_params.o spectral_functions.o -lRNA $(LDFLAGS) RNAspectral.out
 	ar cr $(LIB)/libspectral.a spectral_functions.o spectral_params.o
 	
-spectral_grid.o: spectral_grid.c $(H)/vienna_functions.h $(H)/spectral_functions.h $(H)/spectral_params.h $(H)/constants.h
-	$(CC) $(CCFLAGS) spectral_grid.c
+rna_spectral.o: rna_spectral.c $(H)/vienna_functions.h $(H)/spectral_functions.h $(H)/spectral_params.h $(H)/constants.h
+	$(CC) $(CCFLAGS) rna_spectral.c
 	
 spectral_functions.o: spectral_functions.c $(H)/spectral_functions.h $(H)/spectral_params.h $(H)/spectral_data_structures.h
 	$(CC) $(CCFLAGS) spectral_functions.c
