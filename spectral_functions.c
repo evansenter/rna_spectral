@@ -5,7 +5,7 @@
 #include <gsl/gsl_math.h>
 #include <gsl/gsl_eigen.h>
 #include <gsl/gsl_linalg.h>
-#include "../shared/constants.h"
+#include "constants.h"
 #include "spectral_params.h"
 #include "spectral_grid.h"
 #include "spectral_functions.h"
