@@ -7,11 +7,10 @@
 EIGENSYSTEM init_eigensystem(int length) {
   EIGENSYSTEM eigensystem = {
     .values          = malloc(length * sizeof(double)),
-    .vectors         = malloc(length * length * sizeof(double)),
-    .inverse_vectors = malloc(length * length * sizeof(double)),
+    .vectors         = malloc(length* length * sizeof(double)),
+    .inverse_vectors = malloc(length* length * sizeof(double)),
     .length          = length
   };
-  
   return eigensystem;
 }
 

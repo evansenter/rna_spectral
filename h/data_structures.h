@@ -20,9 +20,9 @@ typedef struct {
 } SPECTRAL_PARAMS;
 
 typedef struct {
-  double *values;       
-  double *vectors;
-  double *inverse_vectors;
+  double* values;
+  double* vectors;
+  double* inverse_vectors;
   int length;
 } EIGENSYSTEM;
 

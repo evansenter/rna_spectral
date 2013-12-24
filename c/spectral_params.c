@@ -21,20 +21,19 @@ SPECTRAL_PARAMS init_spectral_params() {
     .use_min          = 1,
     .eigen_only       = 0
   };
-  
   return parameters;
 }
 
 SPECTRAL_PARAMS parse_spectral_args(int argc, char* argv[]) {
   int i;
   SPECTRAL_PARAMS parameters;
-  
+
   if (argc < 1) {
     spectral_usage();
   }
-  
+
   parameters = init_spectral_params();
-  
+
   for (i = 1; i < argc; i++) {
     if (argv[i][0] == '-') {
       if (!strcmp(argv[i], "-seq")) {
@@ -85,6 +84,7 @@ SPECTRAL_PARAMS parse_spectral_args(int argc, char* argv[]) {
         } else if (!sscanf(argv[++i], "%lf", &(parameters.temperature))) {
           spectral_usage();
         }
+
         temperature = parameters.temperature;
       } else if (!strcmp(argv[i], "-lonely_bp")) {
         parameters.lonely_bp = 1;
@@ -102,32 +102,32 @@ SPECTRAL_PARAMS parse_spectral_args(int argc, char* argv[]) {
       }
     }
   }
-  
+
   if (parameters.verbose) {
     debug_spectral_parameters(parameters);
   }
-    
+
   if (spectral_error_handling(parameters)) {
     spectral_usage();
   }
-  
+
   return parameters;
 }
 
 int spectral_error_handling(SPECTRAL_PARAMS parameters) {
   int error = 0;
-  
+
   if (parameters.energy_grid_file != NULL) {
     fprintf(stderr, "Error: energy_grid_file not yet implemented.\n");
     error++;
   }
-  
+
   // Also need error handling for the size of the structures, if provided.
-  
+
   if (error) {
     fprintf(stderr, "\n");
   }
-  
+
   return error;
 }
 
@@ -150,6 +150,5 @@ void debug_spectral_parameters(SPECTRAL_PARAMS parameters) {
 
 void spectral_usage() {
   fprintf(stderr, "RNAspectral [options]\n\n");
-    
   exit(0);
 }
