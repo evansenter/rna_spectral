@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "spectral_params.h"
+#include "params.h"
 
 extern double temperature;
 

@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "spectral_initializers.h"
-#include "spectral_functions.h"
+#include "initializers.h"
+#include "functions.h"
 
 EIGENSYSTEM init_eigensystem(int length) {
   EIGENSYSTEM eigensystem = {

@@ -5,8 +5,8 @@
 #include <gsl/gsl_eigen.h>
 #include <gsl/gsl_linalg.h>
 #include "constants.h"
-#include "spectral_functions.h"
-#include "spectral_initializers.h"
+#include "functions.h"
+#include "initializers.h"
 
 double* convert_structures_to_transition_matrix(SOLUTION* all_structures, int num_structures, int use_min) {  
   int i, j;
