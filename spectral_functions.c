@@ -6,6 +6,7 @@
 #include <gsl/gsl_linalg.h>
 #include "constants.h"
 #include "spectral_functions.h"
+#include "spectral_initializers.h"
 
 double* convert_structures_to_transition_matrix(SOLUTION* all_structures, int num_structures, int use_min) {  
   int i, j;
@@ -44,28 +45,26 @@ double* convert_structures_to_transition_matrix(SOLUTION* all_structures, int nu
 EIGENSYSTEM convert_transition_matrix_to_eigenvectors(double* transition_matrix, int num_structures) {
   int i, j;
   
-  EIGENSYSTEM eigensystem = {
-    .values          = malloc(num_structures * sizeof(double)),
-    .vectors         = malloc(num_structures * num_structures * sizeof(double)),
-    .inverse_vectors = malloc(num_structures * num_structures * sizeof(double))
-  };
-
-  gsl_matrix_view matrix_view      = gsl_matrix_view_array(transition_matrix, num_structures, num_structures);  
-  gsl_vector_complex *eigenvalues  = gsl_vector_complex_alloc(num_structures);
-  gsl_matrix_complex *eigenvectors = gsl_matrix_complex_alloc(num_structures, num_structures);
+  EIGENSYSTEM eigensystem;
   
-  gsl_eigen_nonsymmv_workspace *workspace = gsl_eigen_nonsymmv_alloc(num_structures);
+  eigensystem = init_eigensystem(num_structures);
+
+  gsl_matrix_view matrix_view      = gsl_matrix_view_array(transition_matrix, eigensystem.length, eigensystem.length);  
+  gsl_vector_complex *eigenvalues  = gsl_vector_complex_alloc(eigensystem.length);
+  gsl_matrix_complex *eigenvectors = gsl_matrix_complex_alloc(eigensystem.length, eigensystem.length);
+  
+  gsl_eigen_nonsymmv_workspace *workspace = gsl_eigen_nonsymmv_alloc(eigensystem.length);
   gsl_eigen_nonsymmv_params(1, workspace);
   gsl_eigen_nonsymmv(&matrix_view.matrix, eigenvalues, eigenvectors, workspace);
   gsl_eigen_nonsymmv_free(workspace);
   
   
-  for (i = 0; i < num_structures; ++i) {
+  for (i = 0; i < eigensystem.length; ++i) {
     eigensystem.values[i]               = GSL_REAL(gsl_vector_complex_get(eigenvalues, i));
     gsl_vector_complex_view eigenvector = gsl_matrix_complex_column(eigenvectors, i);
     
-    for (j = 0; j < num_structures; ++j) {
-      eigensystem.vectors[i + num_structures * j] = GSL_REAL(gsl_vector_complex_get(&eigenvector.vector, j));
+    for (j = 0; j < eigensystem.length; ++j) {
+      eigensystem.vectors[i + eigensystem.length * j] = GSL_REAL(gsl_vector_complex_get(&eigenvector.vector, j));
     }
   }
   
@@ -76,25 +75,25 @@ EIGENSYSTEM convert_transition_matrix_to_eigenvectors(double* transition_matrix,
   return eigensystem;
 }
 
-void invert_matrix(EIGENSYSTEM eigensystem, int num_structures) {
+void invert_matrix(EIGENSYSTEM eigensystem) {
   int i, j, signum;
   
-  gsl_matrix *matrix_to_invert = gsl_matrix_alloc(num_structures, num_structures);
-  gsl_matrix *inversion_matrix = gsl_matrix_alloc(num_structures, num_structures);
-  gsl_permutation *permutation = gsl_permutation_alloc(num_structures);
+  gsl_matrix *matrix_to_invert = gsl_matrix_alloc(eigensystem.length, eigensystem.length);
+  gsl_matrix *inversion_matrix = gsl_matrix_alloc(eigensystem.length, eigensystem.length);
+  gsl_permutation *permutation = gsl_permutation_alloc(eigensystem.length);
   
-  for (i = 0; i < num_structures; ++i) {
-    for (j = 0; j < num_structures; ++j) {
-      gsl_matrix_set(matrix_to_invert, i, j, eigensystem.vectors[i * num_structures + j]);
+  for (i = 0; i < eigensystem.length; ++i) {
+    for (j = 0; j < eigensystem.length; ++j) {
+      gsl_matrix_set(matrix_to_invert, i, j, eigensystem.vectors[i * eigensystem.length + j]);
     }
   }
   
   gsl_linalg_LU_decomp(matrix_to_invert, permutation, &signum);
   gsl_linalg_LU_invert(matrix_to_invert, permutation, inversion_matrix);
   
-  for (i = 0; i < num_structures; ++i) {
-    for (j = 0; j < num_structures; ++j) {
-      eigensystem.inverse_vectors[i * num_structures + j] = gsl_matrix_get(inversion_matrix, i, j);
+  for (i = 0; i < eigensystem.length; ++i) {
+    for (j = 0; j < eigensystem.length; ++j) {
+      eigensystem.inverse_vectors[i * eigensystem.length + j] = gsl_matrix_get(inversion_matrix, i, j);
     }
   }
   
@@ -103,16 +102,16 @@ void invert_matrix(EIGENSYSTEM eigensystem, int num_structures) {
   gsl_permutation_free(permutation);
 }
 
-double probability_at_time(EIGENSYSTEM eigensystem, double timepoint, int start_index, int target_index, int num_structures) {
+double probability_at_time(EIGENSYSTEM eigensystem, double timepoint, int start_index, int target_index) {
   // This function is hard-wired to only consider the kinetics for folding from a distribution where p_{0}(start_index) == 1.
   
   int i;
   double cumulative_probability = 0;
   
-  for (i = 0; i < num_structures; ++i) {
+  for (i = 0; i < eigensystem.length; ++i) {
     cumulative_probability += 
-      eigensystem.vectors[target_index * num_structures + i] * 
-      eigensystem.inverse_vectors[i * num_structures + start_index] * 
+      eigensystem.vectors[target_index * eigensystem.length + i] * 
+      eigensystem.inverse_vectors[i * eigensystem.length + start_index] * 
       exp(eigensystem.values[i] * timepoint);
   }
   
@@ -145,49 +144,4 @@ void print_matrix(char* title, double* matrix, int length) {
   }
 
   printf("\n");
-}
-
-void free_eigensystem(EIGENSYSTEM eigensystem) {
-  free(eigensystem.values);
-  free(eigensystem.vectors);
-  free(eigensystem.inverse_vectors);
-}
-
-int populate_arrays(char* file_path, int** k, int** l, double** p) {
-  FILE *file = fopen(file_path, "r");
-  int i, c, line_count = 0;
-  char *token;
-  char line[1024];
-  
-  if (file == NULL) {
-    fprintf(stderr, "File not found.\n");
-    fclose(file);
-    return -1;
-  }
-  
-  while ((c = fgetc(file)) != EOF) {
-    if (c == '\n') {
-      line_count++;
-    }
-  }
-  
-  *k = malloc(line_count * sizeof(int));
-  *l = malloc(line_count * sizeof(int));
-  *p = malloc(line_count * sizeof(double));
-  
-  rewind(file);
-  
-  while (fgets(line, 1024, file)) {
-    token = strtok(line, ",");
-    (*k)[i]  = atoi(token);
-    token = strtok(NULL, ",");
-    (*l)[i]  = atoi(token);
-    token = strtok(NULL, ",");
-    (*p)[i]  = atof(token);
-    
-    i++;
-  }
-  
-  fclose(file);
-  return line_count;
 }

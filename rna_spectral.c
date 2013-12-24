@@ -9,6 +9,7 @@
 #include "vienna_functions.h"
 #include "spectral_params.h"
 #include "spectral_functions.h"
+#include "spectral_initializers.h"
 
 #define TIMING(start, stop, task) printf("Time in ms for %s: %.2f\n", task, (double)(((stop.tv_sec * 1000000 + stop.tv_usec) - (start.tv_sec * 1000000 + start.tv_usec)) / 1000.0));
 
@@ -34,10 +35,6 @@ int main(int argc, char* argv[]) {
   double mfe_energy, step_counter;
   double* transition_matrix;
   EIGENSYSTEM eigensystem;
-  
-  // int* k;
-  // int* l;
-  // double* p;
   
   char* sequence  = parameters.sequence;
   seq_length      = strlen(sequence);
@@ -103,11 +100,11 @@ int main(int argc, char* argv[]) {
     gettimeofday(&start, NULL);
   #endif
   
-  if (parameters.energy_grid_file != NULL) {
-    // NYI
-  } else {
+  // if (parameters.energy_grid_file != NULL) {
+  //   // Not yet implemented.
+  // } else {
     transition_matrix = convert_structures_to_transition_matrix(all_structures, num_structures, parameters.use_min);
-  }
+  // }
   
   #ifdef INSANE_DEBUG
     print_matrix("transition_matrix", transition_matrix, num_structures);
@@ -132,7 +129,7 @@ int main(int argc, char* argv[]) {
       gettimeofday(&start, NULL);
     #endif
 
-    invert_matrix(eigensystem, num_structures);
+    invert_matrix(eigensystem);
 
     #ifdef DEBUG
       gettimeofday(&stop, NULL);
@@ -141,13 +138,11 @@ int main(int argc, char* argv[]) {
     #endif
 
     #ifdef INSANE_DEBUG
-      print_array("eigensystem.values", eigensystem.values, num_structures);
-      print_matrix("eigensystem.vectors", eigensystem.vectors, num_structures);
-      print_matrix("eigensystem.inverse_vectors", eigensystem.inverse_vectors, num_structures);
+      print_eigensystem(eigensystem);
     #endif
 
     for (step_counter = parameters.start_time; step_counter <= parameters.end_time; step_counter += parameters.step_size) {
-      printf("%f\t%+.8f\n", step_counter, probability_at_time(eigensystem, pow(10, step_counter), from_index, to_index, num_structures));
+      printf("%f\t%+.8f\n", step_counter, probability_at_time(eigensystem, pow(10, step_counter), from_index, to_index));
     }
   }
   

@@ -117,11 +117,6 @@ SPECTRAL_PARAMS parse_spectral_args(int argc, char* argv[]) {
 int spectral_error_handling(SPECTRAL_PARAMS parameters) {
   int error = 0;
   
-  if (parameters.sequence == NULL) {
-    fprintf(stderr, "Error: No sequence provided.\n");
-    error++;
-  }
-  
   if (parameters.energy_grid_file != NULL) {
     fprintf(stderr, "Error: energy_grid_file not yet implemented.\n");
     error++;
