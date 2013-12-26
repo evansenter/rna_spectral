@@ -1,11 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <gsl/gsl_math.h>
-#include <gsl/gsl_eigen.h>
+#include <math.h>
 #include <gsl/gsl_linalg.h>
+#include <gsl/gsl_eigen.h>
 #include "constants.h"
-#include "functions.h"
 #include "initializers.h"
 
 double* convert_structures_to_transition_matrix(SOLUTION* all_structures, int num_structures, int use_min) {
