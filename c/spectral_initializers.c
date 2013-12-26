@@ -1,11 +1,12 @@
 #include <stdlib.h>
 #include "functions.h"
+#include "shared/libmfpt_header.h"
 
 EIGENSYSTEM init_eigensystem(int length) {
   EIGENSYSTEM eigensystem = {
-    .values          = malloc(length * sizeof(double)),
-    .vectors         = malloc(length* length * sizeof(double)),
-    .inverse_vectors = malloc(length* length * sizeof(double)),
+    .values          = calloc(length, sizeof(double)),
+    .vectors         = init_transition_matrix(length),
+    .inverse_vectors = init_transition_matrix(length),
     .length          = length
   };
   return eigensystem;

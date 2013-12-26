@@ -45,38 +45,16 @@ int main(int argc, char* argv[]) {
     empty_str[i] = '.';
   }
   
-  empty_str[i] = '\0';
-  mfe_energy = (double)fold_par(sequence, mfe_str, vienna_params, 0, 0);
-  energy_cap = parameters.energy_cap ? (int)(2 * abs(mfe_energy * 100)) : 1000000;
+  empty_str[i]             = '\0';
+  mfe_energy               = (double)fold_par(sequence, mfe_str, vienna_params, 0, 0);
+  energy_cap               = parameters.energy_cap ? (int)(2 * abs(mfe_energy * 100)) : 1000000;
   SOLUTION* all_structures = subopt_par(sequence, empty_str, vienna_params, energy_cap, 0, 0, NULL);
   
   while (all_structures[num_structures].structure != NULL) {
     num_structures++;
   }
   
-  for (i = 0; i < num_structures; ++i) {
-    if (parameters.start_structure != NULL) {
-      if (!strcmp(parameters.start_structure, all_structures[i].structure)) {
-        from_index = i;
-      }
-    } else {
-      if (!strcmp(empty_str, all_structures[i].structure)) {
-        parameters.start_structure = all_structures[i].structure;
-        from_index                 = i;
-      }
-    }
-    
-    if (parameters.end_structure != NULL) {
-      if (!strcmp(parameters.end_structure, all_structures[i].structure)) {
-        to_index = i;
-      }
-    } else {
-      if (!strcmp(mfe_str, all_structures[i].structure)) {
-        parameters.end_structure = all_structures[i].structure;
-        to_index                 = i;
-      }
-    }
-  }
+  find_key_structure_indices_in_structure_list(&parameters, all_structures, num_structures, empty_str, mfe_str, &from_index, &to_index);
   
   if (parameters.verbose) {
     printf("sequence:\t%s\n", sequence);
