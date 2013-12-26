@@ -4,7 +4,7 @@
 #include "vienna/data_structures.h"
 
 typedef struct {
-  int verbose;
+  short verbose;
   char* sequence;
   char* energy_grid_file;
   char* start_structure;
@@ -13,10 +13,11 @@ typedef struct {
   double start_time;
   double end_time;
   double step_size;
-  int lonely_bp;
-  int energy_cap;
-  int eigen_only;
-  int use_min;
+  short lonely_bp;
+  short energy_cap;
+  short eigen_only;
+  short benchmark;
+  short use_min;
 } SPECTRAL_PARAMS;
 
 typedef struct {

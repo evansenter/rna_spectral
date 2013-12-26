@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <unistd.h>
+#include <ctype.h>
 #include "params.h"
 
 extern double temperature;
@@ -20,87 +22,135 @@ SPECTRAL_PARAMS init_spectral_params() {
     .lonely_bp        = 0,
     .energy_cap       = 1,
     .use_min          = 1,
-    .eigen_only       = 0
+    .eigen_only       = 0,
+    .benchmark        = 0
   };
   return parameters;
 }
 
 SPECTRAL_PARAMS parse_spectral_args(int argc, char* argv[]) {
-  int i;
+  int c;
   SPECTRAL_PARAMS parameters;
-  
-  if (argc < 1) {
-    spectral_usage();
-  }
-  
   parameters = init_spectral_params();
   
-  for (i = 1; i < argc; i++) {
-    if (argv[i][0] == '-') {
-      if (!strcmp(argv[i], "-seq")) {
-        if (i == argc - 1) {
+  while ((c = getopt(argc, argv, "OoCcMmGgBbVvS:s:K:k:L:l:E:e:I:i:J:j:P:p:T:t:")) != -1) {
+    switch (c) {
+      case 'O':
+      case 'o':
+        parameters.lonely_bp = 1;
+        break;
+        
+      case 'C':
+      case 'c':
+        parameters.energy_cap = 0;
+        break;
+        
+      case 'M':
+      case 'm':
+        parameters.use_min = 0;
+        break;
+        
+      case 'G':
+      case 'g':
+        parameters.eigen_only = 1;
+        break;
+        
+      case 'B':
+      case 'b':
+        parameters.benchmark = 1;
+        break;
+        
+      case 'V':
+      case 'v':
+        parameters.verbose = 1;
+        break;
+        
+      case 'S':
+      case 's':
+        parameters.sequence = strdup(optarg);
+        break;
+        
+      case 'K':
+      case 'k':
+        parameters.start_structure = strdup(optarg);
+        break;
+        
+      case 'L':
+      case 'l':
+        parameters.end_structure = strdup(optarg);
+        break;
+        
+      case 'E':
+      case 'e':
+        parameters.energy_grid_file = strdup(optarg);
+        break;
+        
+      case 'I':
+      case 'i':
+        if (!sscanf(optarg, "%lf", &(parameters.start_time))) {
           spectral_usage();
-        } else {
-          parameters.sequence = argv[++i];
         }
-      } else if (!strcmp(argv[i], "-from")) {
-        if (i == argc - 1) {
-          spectral_usage();
-        } else {
-          parameters.start_structure = argv[++i];
-        }
-      } else if (!strcmp(argv[i], "-to")) {
-        if (i == argc - 1) {
-          spectral_usage();
-        } else {
-          parameters.end_structure = argv[++i];
-        }
-      } else if (!strcmp(argv[i], "-energy_grid_file")) {
-        if (i == argc - 1) {
-          spectral_usage();
-        } else {
-          parameters.energy_grid_file = argv[++i];
-        }
-      } else if (!strcmp(argv[i], "-start_time")) {
-        if (i == argc - 1) {
-          spectral_usage();
-        } else if (!sscanf(argv[++i], "%lf", &(parameters.start_time))) {
+        
+        break;
+        
+      case 'J':
+      case 'j':
+        if (!sscanf(optarg, "%lf", &(parameters.end_time))) {
           spectral_usage();
         }
-      } else if (!strcmp(argv[i], "-end_time")) {
-        if (i == argc - 1) {
-          spectral_usage();
-        } else if (!sscanf(argv[++i], "%lf", &(parameters.end_time))) {
-          spectral_usage();
-        }
-      } else if (!strcmp(argv[i], "-step_size")) {
-        if (i == argc - 1) {
-          spectral_usage();
-        } else if (!sscanf(argv[++i], "%lf", &(parameters.step_size))) {
+        
+        break;
+        
+      case 'P':
+      case 'p':
+        if (!sscanf(optarg, "%lf", &(parameters.step_size))) {
           spectral_usage();
         }
-      } else if (!strcmp(argv[i], "-temperature")) {
-        if (i == argc - 1) {
-          spectral_usage();
-        } else if (!sscanf(argv[++i], "%lf", &(parameters.temperature))) {
+        
+        break;
+        
+      case 'T':
+      case 't':
+        if (!sscanf(optarg, "%lf", &(parameters.temperature))) {
           spectral_usage();
         }
         
         temperature = parameters.temperature;
-      } else if (!strcmp(argv[i], "-lonely_bp")) {
-        parameters.lonely_bp = 1;
-      } else if (!strcmp(argv[i], "-no_energy_cap")) {
-        parameters.energy_cap = 0;
-      } else if (!strcmp(argv[i], "-no_min_transition")) {
-        parameters.use_min = 0;
-      } else if (!strcmp(argv[i], "-eigen_only")) {
-        parameters.eigen_only = 1;
-      } else if (!(strcmp(argv[i], "-verbose") && strcmp(argv[i], "-v"))) {
-        parameters.verbose = 1;
-      } else {
-        fprintf(stderr, "Error: %s flag not recognized.\n\n", argv[i]);
+        break;
+        
+      case '?':
+        switch (optopt) {
+          case 'S':
+          case 's':
+          case 'K':
+          case 'k':
+          case 'L':
+          case 'l':
+          case 'E':
+          case 'e':
+          case 'I':
+          case 'i':
+          case 'J':
+          case 'j':
+          case 'P':
+          case 'p':
+          case 'T':
+          case 't':
+            fprintf(stderr, "Option -%c requires an argument.\n", optopt);
+            break;
+            
+          default:
+            if (isprint(optopt)) {
+              fprintf(stderr, "Unknown option `-%c'.\n", optopt);
+            } else {
+              fprintf(stderr, "Unknown option character `\\x%x'.\n", optopt);
+            }
+        }
+        
         spectral_usage();
-      }
+        
+      default:
+        spectral_usage();
     }
   }
   
@@ -133,23 +183,23 @@ int spectral_error_handling(SPECTRAL_PARAMS parameters) {
 }
 
 void debug_spectral_parameters(SPECTRAL_PARAMS parameters) {
-  printf("sequence\t\t%s\n",             parameters.sequence);
-  printf("start_structure\t\t%s\n",      parameters.start_structure == NULL ? "empty" : parameters.start_structure);
-  printf("end_structure\t\t%s\n",        parameters.end_structure == NULL ? "mfe" : parameters.end_structure);
-  printf("energy_grid_file (NYI)\t%s\n", parameters.energy_grid_file == NULL ? "none" : parameters.energy_grid_file);
-  printf("temperature\t\t%.1f\n",        parameters.temperature);
-  printf("start_time\t\t%.2e\n",         parameters.start_time);
-  printf("end_time\t\t%.2e\n",           parameters.end_time);
-  printf("step_size\t\t%.2e\n",          parameters.step_size);
-  printf("lonely_bp\t\t%s\n",            parameters.lonely_bp ? "No" : "Yes");
-  printf("energy_cap\t\t%s\n",           parameters.energy_cap ? "Yes" : "No");
-  printf("eigen_only\t\t%s\n",           parameters.eigen_only ? "Yes" : "No");
-  printf("use_min\t\t\t%s\n",            parameters.use_min ? "MIN(1, exp(-(E(j) - E(i)) / RT))" : "exp(-(E(j) - E(i)) / RT)");
-  printf("temperature\t\t%.1f\n",        temperature);
-  printf("\n");
+  printf("(s) sequence\t\t\t%s\n",           parameters.sequence);
+  printf("(k) start_structure\t\t%s\n",      parameters.start_structure == NULL ? "empty" : parameters.start_structure);
+  printf("(l) end_structure\t\t%s\n",        parameters.end_structure == NULL ? "mfe" : parameters.end_structure);
+  printf("(e) energy_grid_file (NYI)\t%s\n", parameters.energy_grid_file == NULL ? "none" : parameters.energy_grid_file);
+  printf("(t) temperature\t\t\t%.1f\n",      parameters.temperature);
+  printf("(i) start_time\t\t\t%.2e\n",       parameters.start_time);
+  printf("(j) end_time\t\t\t%.2e\n",         parameters.end_time);
+  printf("(p) step_size\t\t\t%.2e\n",        parameters.step_size);
+  printf("(l) lonely_bp\t\t\t%s\n",          parameters.lonely_bp ? "No" : "Yes");
+  printf("(c) energy_cap\t\t\t%s\n",         parameters.energy_cap ? "Yes" : "No");
+  printf("(m) use_min\t\t\t%s\n",            parameters.use_min ? "MIN(1, exp(-(E(j) - E(i)) / RT))" : "exp(-(E(j) - E(i)) / RT)");
+  printf("(g) eigen_only\t\t\t%s\n",         parameters.eigen_only ? "Yes" : "No");
+  printf("(b) benchmark\t\t\t%s\n",          parameters.benchmark ? "Yes" : "No");
+  printf("(t) temperature\t\t\t%.1f\n",      parameters.temperature);
 }
 
 void spectral_usage() {
-  fprintf(stderr, "RNAspectral [options]\n\n");
-  exit(0);
+  fprintf(stderr, "RNAspectral [options] -s [sequence]\n");
+  abort();
 }
