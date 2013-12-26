@@ -12,33 +12,33 @@ double* convert_structures_to_transition_matrix(SOLUTION* all_structures, int nu
   int i, j;
   double col_sum;
   double* transition_matrix = init_transition_matrix(num_structures);
-
+  
   for (i = 0; i < num_structures; ++i) {
     col_sum = 0;
-
+    
     for (j = 0; j < num_structures; ++j) {
       if (i != j) {
         if (use_min) {
           COL_ORDER(transition_matrix, i, j, num_structures) = \
-            MIN(1, exp(-((double)all_structures[j].energy - (double)all_structures[i].energy) / RT));
+              MIN(1, exp(-((double)all_structures[j].energy - (double)all_structures[i].energy) / RT));
         } else {
           COL_ORDER(transition_matrix, i, j, num_structures) = \
-            exp(-((double)all_structures[j].energy - (double)all_structures[i].energy) / RT);
+              exp(-((double)all_structures[j].energy - (double)all_structures[i].energy) / RT);
         }
-
+        
         col_sum += COL_ORDER(transition_matrix, i, j, num_structures);
         #ifdef INSANE_DEBUG
         printf("%d\t%d\t%.4e\n", i, j, COL_ORDER(transition_matrix, i, j, num_structures));
         #endif
       }
     }
-
+    
     #ifdef INSANE_DEBUG
     printf("%d col_sum:\t%.4e\n\n", i, col_sum);
     #endif
     COL_ORDER(transition_matrix, i, i, num_structures) = -col_sum;
   }
-
+  
   return transition_matrix;
 }
 
@@ -53,16 +53,16 @@ EIGENSYSTEM convert_transition_matrix_to_eigenvectors(double* transition_matrix,
   gsl_eigen_nonsymmv_params(1, workspace);
   gsl_eigen_nonsymmv(&matrix_view.matrix, eigenvalues, eigenvectors, workspace);
   gsl_eigen_nonsymmv_free(workspace);
-
+  
   for (i = 0; i < eigensystem.length; ++i) {
     eigensystem.values[i]               = GSL_REAL(gsl_vector_complex_get(eigenvalues, i));
     gsl_vector_complex_view eigenvector = gsl_matrix_complex_column(eigenvectors, i);
-
+    
     for (j = 0; j < eigensystem.length; ++j) {
       COL_ORDER(eigensystem.vectors, i, j, eigensystem.length) = GSL_REAL(gsl_vector_complex_get(&eigenvector.vector, j));
     }
   }
-
+  
   free_transition_matrix(transition_matrix);
   gsl_vector_complex_free(eigenvalues);
   gsl_matrix_complex_free(eigenvectors);
@@ -74,22 +74,22 @@ void invert_matrix(EIGENSYSTEM eigensystem) {
   gsl_matrix* matrix_to_invert = gsl_matrix_alloc(eigensystem.length, eigensystem.length);
   gsl_matrix* inversion_matrix = gsl_matrix_alloc(eigensystem.length, eigensystem.length);
   gsl_permutation* permutation = gsl_permutation_alloc(eigensystem.length);
-
+  
   for (i = 0; i < eigensystem.length; ++i) {
     for (j = 0; j < eigensystem.length; ++j) {
       gsl_matrix_set(matrix_to_invert, i, j, ROW_ORDER(eigensystem.vectors, i, j, eigensystem.length));
     }
   }
-
+  
   gsl_linalg_LU_decomp(matrix_to_invert, permutation, &signum);
   gsl_linalg_LU_invert(matrix_to_invert, permutation, inversion_matrix);
-
+  
   for (i = 0; i < eigensystem.length; ++i) {
     for (j = 0; j < eigensystem.length; ++j) {
       ROW_ORDER(eigensystem.inverse_vectors, i, j, eigensystem.length) = gsl_matrix_get(inversion_matrix, i, j);
     }
   }
-
+  
   gsl_matrix_free(matrix_to_invert);
   gsl_matrix_free(inversion_matrix);
   gsl_permutation_free(permutation);
@@ -99,14 +99,14 @@ double probability_at_time(EIGENSYSTEM eigensystem, double timepoint, int start_
   // This function is hard-wired to only consider the kinetics for folding from a distribution where p_{0}(start_index) == 1.
   int i;
   double cumulative_probability = 0;
-
+  
   for (i = 0; i < eigensystem.length; ++i) {
     cumulative_probability +=
       ROW_ORDER(eigensystem.vectors, target_index, i, eigensystem.length) *
       ROW_ORDER(eigensystem.inverse_vectors, i, start_index, eigensystem.length) *
       exp(eigensystem.values[i] * timepoint);
   }
-
+  
   return cumulative_probability;
 }
 
@@ -141,11 +141,11 @@ void find_key_structure_indices_in_structure_list(SPECTRAL_PARAMS* parameters, S
 void print_array(char* title, double* matrix, int length) {
   int i;
   printf("%s\n", title);
-
+  
   for (i = 0; i < length; ++i) {
     printf("%+.4f\n", matrix[i]);
   }
-
+  
   printf("\n");
 }
 
@@ -153,14 +153,14 @@ void print_array(char* title, double* matrix, int length) {
 void print_matrix(char* title, double* matrix, int length) {
   int i, j;
   printf("%s\n", title);
-
+  
   for (i = 0; i < length; ++i) {
     for (j = 0; j < length; ++j) {
       printf("%+.4f\t", ROW_ORDER(matrix, i, j, length));
     }
-
+    
     printf("\n");
   }
-
+  
   printf("\n");
 }

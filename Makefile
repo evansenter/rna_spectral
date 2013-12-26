@@ -27,7 +27,7 @@ ifeq "$(GCC_GTEQ_4.9.0)" "1"
 	CCFLAGS += -fdiagnostics-color=always
 endif
 	
-RNAspectral.out: $(CODE)/rna_spectral.o $(CODE)/spectral_params.o $(CODE)/spectral_functions.o $(CODE)/spectral_initializers.o
+RNAspectral.out: $(CODE)/rna_spectral.o $(CODE)/spectral_params.o $(CODE)/spectral_functions.o $(CODE)/spectral_initializers.o $(LIB)/libmfpt.a 
 	$(CC) $(CODE)/rna_spectral.o $(CODE)/spectral_params.o $(CODE)/spectral_functions.o $(CODE)/spectral_initializers.o -lRNA $(LDFLAGS) RNAspectral.out
 	ar cr $(LIB)/libspectral.a $(CODE)/spectral_functions.o $(CODE)/spectral_params.o $(CODE)/spectral_initializers.o
 	
@@ -43,7 +43,8 @@ $(CODE)/spectral_params.o: $(CODE)/spectral_params.c $(HEADER)/params.h $(HEADER
 $(CODE)/spectral_initializers.o: $(CODE)/spectral_initializers.c $(HEADER)/initializers.h $(HEADER)/functions.h $(SHARED_HEADER)/shared/libmfpt_header.h
 	$(CC) $(CCFLAGS) $(CODE)/spectral_initializers.c -o $(CODE)/spectral_initializers.o
   
-$(HEADER)/data_structures.h: $(SHARED_HEADER)/vienna/data_structures.h $(SHARED_HEADER)/vienna/energy_const.h
+$(LIB)/libmfpt.a:
+	cd ../mfpt; make
 
 clean:
 	rm -f $(CODE)/*.o $(LIB)/libspectral.a RNAspectral.out
