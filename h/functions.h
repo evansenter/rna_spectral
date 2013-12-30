@@ -3,7 +3,7 @@
 
 #include "data_structures.h"
 
-double* convert_structures_to_transition_matrix(SOLUTION*, int, int);
+double* convert_structures_to_transition_matrix(SOLUTION*, int);
 EIGENSYSTEM convert_transition_matrix_to_eigenvectors(double*, int);
 void invert_matrix(EIGENSYSTEM);
 double probability_at_time(EIGENSYSTEM, double, int, int);

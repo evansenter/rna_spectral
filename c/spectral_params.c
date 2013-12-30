@@ -21,7 +21,6 @@ SPECTRAL_PARAMS init_spectral_params() {
     .step_size        = 1e-1,
     .lonely_bp        = 0,
     .energy_cap       = 1,
-    .use_min          = 1,
     .eigen_only       = 0,
     .benchmark        = 0
   };
@@ -33,7 +32,7 @@ SPECTRAL_PARAMS parse_spectral_args(int argc, char* argv[]) {
   SPECTRAL_PARAMS parameters;
   parameters = init_spectral_params();
   
-  while ((c = getopt(argc, argv, "OoCcMmGgBbVvS:s:K:k:L:l:E:e:I:i:J:j:P:p:T:t:")) != -1) {
+  while ((c = getopt(argc, argv, "OoCcGgBbVvS:s:K:k:L:l:E:e:I:i:J:j:P:p:T:t:")) != -1) {
     switch (c) {
       case 'O':
       case 'o':
@@ -43,11 +42,6 @@ SPECTRAL_PARAMS parse_spectral_args(int argc, char* argv[]) {
       case 'C':
       case 'c':
         parameters.energy_cap = 0;
-        break;
-        
-      case 'M':
-      case 'm':
-        parameters.use_min = 0;
         break;
         
       case 'G':
@@ -193,7 +187,6 @@ void debug_spectral_parameters(SPECTRAL_PARAMS parameters) {
   printf("(p) step_size\t\t\t%.2e\n",        parameters.step_size);
   printf("(l) lonely_bp\t\t\t%s\n",          parameters.lonely_bp ? "No" : "Yes");
   printf("(c) energy_cap\t\t\t%s\n",         parameters.energy_cap ? "Yes" : "No");
-  printf("(m) use_min\t\t\t%s\n",            parameters.use_min ? "MIN(1, exp(-(E(j) - E(i)) / RT))" : "exp(-(E(j) - E(i)) / RT)");
   printf("(g) eigen_only\t\t\t%s\n",         parameters.eigen_only ? "Yes" : "No");
   printf("(b) benchmark\t\t\t%s\n",          parameters.benchmark ? "Yes" : "No");
   printf("(t) temperature\t\t\t%.1f\n",      parameters.temperature);

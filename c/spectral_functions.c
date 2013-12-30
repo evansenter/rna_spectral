@@ -8,7 +8,7 @@
 #include "constants.h"
 #include "initializers.h"
 
-double* convert_structures_to_transition_matrix(SOLUTION* all_structures, int num_structures, int use_min) {
+double* convert_structures_to_transition_matrix(SOLUTION* all_structures, int num_structures) {
   int i, j;
   double col_sum;
   double* transition_matrix = init_transition_matrix(num_structures);
@@ -18,13 +18,8 @@ double* convert_structures_to_transition_matrix(SOLUTION* all_structures, int nu
     
     for (j = 0; j < num_structures; ++j) {
       if (i != j) {
-        if (use_min) {
-          COL_ORDER(transition_matrix, i, j, num_structures) = \
-              MIN(1, exp(-((double)all_structures[j].energy - (double)all_structures[i].energy) / RT));
-        } else {
-          COL_ORDER(transition_matrix, i, j, num_structures) = \
-              exp(-((double)all_structures[j].energy - (double)all_structures[i].energy) / RT);
-        }
+        COL_ORDER(transition_matrix, i, j, num_structures) = \
+          MIN(1, exp(-((double)all_structures[j].energy - (double)all_structures[i].energy) / RT));
         
         col_sum += COL_ORDER(transition_matrix, i, j, num_structures);
         #ifdef INSANE_DEBUG
@@ -45,10 +40,10 @@ double* convert_structures_to_transition_matrix(SOLUTION* all_structures, int nu
 EIGENSYSTEM convert_transition_matrix_to_eigenvectors(double* transition_matrix, int num_structures) {
   int i, j;
   EIGENSYSTEM eigensystem;
-  eigensystem = init_eigensystem(num_structures);
-  gsl_matrix_view matrix_view      = gsl_matrix_view_array(transition_matrix, eigensystem.length, eigensystem.length);
-  gsl_vector_complex* eigenvalues  = gsl_vector_complex_alloc(eigensystem.length);
-  gsl_matrix_complex* eigenvectors = gsl_matrix_complex_alloc(eigensystem.length, eigensystem.length);
+  eigensystem                             = init_eigensystem(num_structures);
+  gsl_matrix_view matrix_view             = gsl_matrix_view_array(transition_matrix, eigensystem.length, eigensystem.length);
+  gsl_vector_complex* eigenvalues         = gsl_vector_complex_alloc(eigensystem.length);
+  gsl_matrix_complex* eigenvectors        = gsl_matrix_complex_alloc(eigensystem.length, eigensystem.length);
   gsl_eigen_nonsymmv_workspace* workspace = gsl_eigen_nonsymmv_alloc(eigensystem.length);
   gsl_eigen_nonsymmv_params(1, workspace);
   gsl_eigen_nonsymmv(&matrix_view.matrix, eigenvalues, eigenvectors, workspace);

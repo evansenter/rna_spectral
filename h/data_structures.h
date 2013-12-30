@@ -17,7 +17,6 @@ typedef struct {
   short energy_cap;
   short eigen_only;
   short benchmark;
-  short use_min;
 } SPECTRAL_PARAMS;
 
 typedef struct {

@@ -79,7 +79,7 @@ int main(int argc, char* argv[]) {
     gettimeofday(&start, NULL);
   }
   
-  transition_matrix = convert_structures_to_transition_matrix(all_structures, num_structures, parameters.use_min);
+  transition_matrix = convert_structures_to_transition_matrix(all_structures, num_structures);
   #ifdef INSANE_DEBUG
   print_matrix("transition_matrix", transition_matrix, num_structures);
   #endif
