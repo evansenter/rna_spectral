@@ -9,6 +9,8 @@ typedef struct {
   char* energy_grid_file;
   char* start_structure;
   char* end_structure;
+  int start_index;
+  int end_index;
   double temperature;
   double start_time;
   double end_time;

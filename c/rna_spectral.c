@@ -14,8 +14,8 @@
 extern double temperature;
 SPECTRAL_PARAMS parameters;
 
-int main(int argc, char* argv[]) {
-  struct timeval fullStart, fullStop, start, stop;
+int main(int argc, char** argv) {
+  struct timeval full_start, full_stop, start, stop;
   paramT*        vienna_params;
   model_detailsT vienna_details;
   set_model_details(&vienna_details);
@@ -28,12 +28,12 @@ int main(int argc, char* argv[]) {
   }
   
   if (parameters.benchmark) {
-    gettimeofday(&fullStart, NULL);
+    gettimeofday(&full_start, NULL);
     gettimeofday(&start, NULL);
   }
   
-  int i, seq_length, energy_cap, from_index = -1, to_index = -1, num_structures = 0;
-  double mfe_energy, step_counter;
+  int i, seq_length, energy_cap, num_structures = 0;
+  double mfe_energy;
   double* transition_matrix;
   EIGENSYSTEM eigensystem;
   char* sequence  = parameters.sequence;
@@ -54,12 +54,12 @@ int main(int argc, char* argv[]) {
     num_structures++;
   }
   
-  find_key_structure_indices_in_structure_list(&parameters, all_structures, num_structures, empty_str, mfe_str, &from_index, &to_index);
+  find_key_structure_indices_in_structure_list(&parameters, all_structures, num_structures, empty_str, mfe_str);
   
   if (parameters.verbose) {
     printf("sequence:\t%s\n", sequence);
-    printf("start:\t\t%s\t%+.2f kcal/mol\t(%d)\n", parameters.start_structure, all_structures[from_index].energy, from_index);
-    printf("stop:\t\t%s\t%+.2f kcal/mol\t(%d)\n", parameters.end_structure, all_structures[to_index].energy, to_index);
+    printf("start:\t\t%s\t%+.2f kcal/mol\t(%d)\n", parameters.start_structure, all_structures[parameters.start_index].energy, parameters.start_index);
+    printf("stop:\t\t%s\t%+.2f kcal/mol\t(%d)\n", parameters.end_structure, all_structures[parameters.end_index].energy, parameters.end_index);
     printf("energy cap:\t%+.2f kcal/mol above MFE\n", energy_cap / 100.);
     printf("num str:\t%d\n", num_structures);
   }
@@ -115,9 +115,7 @@ int main(int argc, char* argv[]) {
     print_eigensystem(eigensystem);
     #endif
     
-    for (step_counter = parameters.start_time; step_counter <= parameters.end_time; step_counter += parameters.step_size) {
-      printf("%f\t%+.8f\n", step_counter, probability_at_time(eigensystem, pow(10, step_counter), from_index, to_index));
-    }
+    print_population_proportion(parameters, eigensystem);
   }
   
   free_eigensystem(eigensystem);
@@ -125,8 +123,8 @@ int main(int argc, char* argv[]) {
   if (parameters.benchmark) {
     gettimeofday(&stop, NULL);
     TIMING(start, stop, "generate_population_points")
-    gettimeofday(&fullStop, NULL);
-    TIMING(fullStart, fullStop, "total")
+    gettimeofday(&full_stop, NULL);
+    TIMING(full_start, full_stop, "total")
   }
   
   return 0;

@@ -7,6 +7,17 @@
 #include "shared/libmfpt_header.h"
 #include "constants.h"
 #include "initializers.h"
+#include "functions.h"
+
+void population_proportion_from_row_ordered_transition_matrix(SPECTRAL_PARAMS parameters, double* row_transition_matrix, int length) {
+  double* column_transition_matrix;
+  EIGENSYSTEM eigensystem;
+  
+  column_transition_matrix = transpose_matrix(row_transition_matrix, length);
+  eigensystem              = convert_transition_matrix_to_eigenvectors(column_transition_matrix, length);
+  invert_matrix(eigensystem);
+  print_population_proportion(parameters, eigensystem);
+}
 
 double* convert_structures_to_transition_matrix(SOLUTION* all_structures, int num_structures) {
   int i, j;
@@ -105,31 +116,48 @@ double probability_at_time(EIGENSYSTEM eigensystem, double timepoint, int start_
   return cumulative_probability;
 }
 
-void find_key_structure_indices_in_structure_list(SPECTRAL_PARAMS* parameters, SOLUTION* all_structures, int num_structures, char* empty_str, char* mfe_str, int* from_index, int* to_index) {
+void find_key_structure_indices_in_structure_list(SPECTRAL_PARAMS* parameters, SOLUTION* all_structures, int num_structures, char* empty_str, char* mfe_str) {
   int i;
   
   for (i = 0; i < num_structures; ++i) {
-    if (parameters->start_structure != NULL) {
-      if (!strcmp(parameters->start_structure, all_structures[i].structure)) {
-        *from_index = i;
-      }
-    } else {
-      if (!strcmp(empty_str, all_structures[i].structure)) {
-        parameters->start_structure = all_structures[i].structure;
-        *from_index                 = i;
+    if (parameters->start_index == -1) {
+      if (parameters->start_structure != NULL) {
+        if (!strcmp(parameters->start_structure, all_structures[i].structure)) {
+          parameters->start_index = i;
+        }
+      } else {
+        if (!strcmp(empty_str, all_structures[i].structure)) {
+          parameters->start_structure = all_structures[i].structure;
+          parameters->start_index     = i;
+        }
       }
     }
     
-    if (parameters->end_structure != NULL) {
-      if (!strcmp(parameters->end_structure, all_structures[i].structure)) {
-        *to_index = i;
-      }
-    } else {
-      if (!strcmp(mfe_str, all_structures[i].structure)) {
-        parameters->end_structure = all_structures[i].structure;
-        *to_index                 = i;
+    if (parameters->end_index == -1) {
+      if (parameters->end_structure != NULL) {
+        if (!strcmp(parameters->end_structure, all_structures[i].structure)) {
+          parameters->end_index = i;
+        }
+      } else {
+        if (!strcmp(mfe_str, all_structures[i].structure)) {
+          parameters->end_structure = all_structures[i].structure;
+          parameters->end_index     = i;
+        }
       }
     }
+  }
+}
+
+void print_population_proportion(const SPECTRAL_PARAMS parameters, const EIGENSYSTEM eigensystem) {
+  double step_counter;
+  
+  for (step_counter = parameters.start_time; step_counter <= parameters.end_time; step_counter += parameters.step_size) {
+    printf(
+      "%f\t%+.8f\t%+.8f\n", 
+      step_counter, 
+      probability_at_time(eigensystem, pow(10, step_counter), parameters.start_index, parameters.end_index),
+      probability_at_time(eigensystem, pow(10, step_counter), parameters.start_index, parameters.start_index)
+    );
   }
 }
 

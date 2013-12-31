@@ -15,6 +15,8 @@ SPECTRAL_PARAMS init_spectral_params() {
     .energy_grid_file = NULL,
     .start_structure  = NULL,
     .end_structure    = NULL,
+    .start_index      = -1,
+    .end_index        = -1,
     .temperature      = 37.,
     .start_time       = -11,
     .end_time         = 0,
@@ -27,7 +29,7 @@ SPECTRAL_PARAMS init_spectral_params() {
   return parameters;
 }
 
-SPECTRAL_PARAMS parse_spectral_args(int argc, char* argv[]) {
+SPECTRAL_PARAMS parse_spectral_args(int argc, char** argv) {
   int c;
   SPECTRAL_PARAMS parameters;
   parameters = init_spectral_params();
@@ -180,6 +182,8 @@ void debug_spectral_parameters(SPECTRAL_PARAMS parameters) {
   printf("(s) sequence\t\t\t%s\n",           parameters.sequence);
   printf("(k) start_structure\t\t%s\n",      parameters.start_structure == NULL ? "empty" : parameters.start_structure);
   printf("(l) end_structure\t\t%s\n",        parameters.end_structure == NULL ? "mfe" : parameters.end_structure);
+  printf("    start_index\t\t\t%d\n",        parameters.start_index);
+  printf("    end_index\t\t\t%d\n",          parameters.end_index);
   printf("(e) energy_grid_file (NYI)\t%s\n", parameters.energy_grid_file == NULL ? "none" : parameters.energy_grid_file);
   printf("(t) temperature\t\t\t%.1f\n",      parameters.temperature);
   printf("(i) start_time\t\t\t%.2e\n",       parameters.start_time);
