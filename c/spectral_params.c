@@ -83,7 +83,7 @@ SPECTRAL_PARAMS parse_spectral_args(int argc, char** argv) {
         
       case 'I':
       case 'i':
-        if (!sscanf(optarg, "%lf", &(parameters.start_time))) {
+        if (!sscanf(optarg, "%lf", &parameters.start_time)) {
           spectral_usage();
         }
         
@@ -91,7 +91,7 @@ SPECTRAL_PARAMS parse_spectral_args(int argc, char** argv) {
         
       case 'J':
       case 'j':
-        if (!sscanf(optarg, "%lf", &(parameters.end_time))) {
+        if (!sscanf(optarg, "%lf", &parameters.end_time)) {
           spectral_usage();
         }
         
@@ -99,7 +99,7 @@ SPECTRAL_PARAMS parse_spectral_args(int argc, char** argv) {
         
       case 'P':
       case 'p':
-        if (!sscanf(optarg, "%lf", &(parameters.step_size))) {
+        if (!sscanf(optarg, "%lf", &parameters.step_size)) {
           spectral_usage();
         }
         
@@ -107,7 +107,7 @@ SPECTRAL_PARAMS parse_spectral_args(int argc, char** argv) {
         
       case 'T':
       case 't':
-        if (!sscanf(optarg, "%lf", &(parameters.temperature))) {
+        if (!sscanf(optarg, "%lf", &parameters.temperature)) {
           spectral_usage();
         }
         
@@ -161,7 +161,7 @@ SPECTRAL_PARAMS parse_spectral_args(int argc, char** argv) {
   return parameters;
 }
 
-int spectral_error_handling(SPECTRAL_PARAMS parameters) {
+int spectral_error_handling(const SPECTRAL_PARAMS parameters) {
   int error = 0;
   
   if (parameters.energy_grid_file != NULL) {
@@ -178,7 +178,7 @@ int spectral_error_handling(SPECTRAL_PARAMS parameters) {
   return error;
 }
 
-void debug_spectral_parameters(SPECTRAL_PARAMS parameters) {
+void debug_spectral_parameters(const SPECTRAL_PARAMS parameters) {
   printf("(s) sequence\t\t\t%s\n",           parameters.sequence);
   printf("(k) start_structure\t\t%s\n",      parameters.start_structure == NULL ? "empty" : parameters.start_structure);
   printf("(l) end_structure\t\t%s\n",        parameters.end_structure == NULL ? "mfe" : parameters.end_structure);

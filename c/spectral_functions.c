@@ -9,17 +9,17 @@
 #include "initializers.h"
 #include "functions.h"
 
-void population_proportion_from_row_ordered_transition_matrix(SPECTRAL_PARAMS parameters, double* row_transition_matrix, int length) {
+void population_proportion_from_row_ordered_transition_matrix(const SPECTRAL_PARAMS parameters, double* row_transition_matrix, int length) {
   double* column_transition_matrix;
   EIGENSYSTEM eigensystem;
   
   column_transition_matrix = transpose_matrix(row_transition_matrix, length);
   eigensystem              = convert_transition_matrix_to_eigenvectors(column_transition_matrix, length);
-  invert_matrix(eigensystem);
+  invert_matrix(&eigensystem);
   print_population_proportion(parameters, eigensystem);
 }
 
-double* convert_structures_to_transition_matrix(SOLUTION* all_structures, int num_structures) {
+double* convert_structures_to_transition_matrix(const SOLUTION* all_structures, int num_structures) {
   int i, j;
   double col_sum;
   double* transition_matrix = init_transition_matrix(num_structures);
@@ -75,24 +75,24 @@ EIGENSYSTEM convert_transition_matrix_to_eigenvectors(double* transition_matrix,
   return eigensystem;
 }
 
-void invert_matrix(EIGENSYSTEM eigensystem) {
+void invert_matrix(EIGENSYSTEM* eigensystem) {
   int i, j, signum;
-  gsl_matrix* matrix_to_invert = gsl_matrix_alloc(eigensystem.length, eigensystem.length);
-  gsl_matrix* inversion_matrix = gsl_matrix_alloc(eigensystem.length, eigensystem.length);
-  gsl_permutation* permutation = gsl_permutation_alloc(eigensystem.length);
+  gsl_matrix* matrix_to_invert = gsl_matrix_alloc(eigensystem->length, eigensystem->length);
+  gsl_matrix* inversion_matrix = gsl_matrix_alloc(eigensystem->length, eigensystem->length);
+  gsl_permutation* permutation = gsl_permutation_alloc(eigensystem->length);
   
-  for (i = 0; i < eigensystem.length; ++i) {
-    for (j = 0; j < eigensystem.length; ++j) {
-      gsl_matrix_set(matrix_to_invert, i, j, ROW_ORDER(eigensystem.vectors, i, j, eigensystem.length));
+  for (i = 0; i < eigensystem->length; ++i) {
+    for (j = 0; j < eigensystem->length; ++j) {
+      gsl_matrix_set(matrix_to_invert, i, j, ROW_ORDER(eigensystem->vectors, i, j, eigensystem->length));
     }
   }
   
   gsl_linalg_LU_decomp(matrix_to_invert, permutation, &signum);
   gsl_linalg_LU_invert(matrix_to_invert, permutation, inversion_matrix);
   
-  for (i = 0; i < eigensystem.length; ++i) {
-    for (j = 0; j < eigensystem.length; ++j) {
-      ROW_ORDER(eigensystem.inverse_vectors, i, j, eigensystem.length) = gsl_matrix_get(inversion_matrix, i, j);
+  for (i = 0; i < eigensystem->length; ++i) {
+    for (j = 0; j < eigensystem->length; ++j) {
+      ROW_ORDER(eigensystem->inverse_vectors, i, j, eigensystem->length) = gsl_matrix_get(inversion_matrix, i, j);
     }
   }
   
@@ -101,7 +101,7 @@ void invert_matrix(EIGENSYSTEM eigensystem) {
   gsl_permutation_free(permutation);
 }
 
-double probability_at_time(EIGENSYSTEM eigensystem, double timepoint, int start_index, int target_index) {
+double probability_at_time(const EIGENSYSTEM eigensystem, double timepoint, int start_index, int target_index) {
   // This function is hard-wired to only consider the kinetics for folding from a distribution where p_{0}(start_index) == 1.
   int i;
   double cumulative_probability = 0;
@@ -116,7 +116,7 @@ double probability_at_time(EIGENSYSTEM eigensystem, double timepoint, int start_
   return cumulative_probability;
 }
 
-void find_key_structure_indices_in_structure_list(SPECTRAL_PARAMS* parameters, SOLUTION* all_structures, int num_structures, char* empty_str, char* mfe_str) {
+void find_key_structure_indices_in_structure_list(SPECTRAL_PARAMS* parameters, const SOLUTION* all_structures, int num_structures, char* empty_str, char* mfe_str) {
   int i;
   
   for (i = 0; i < num_structures; ++i) {

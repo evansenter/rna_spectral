@@ -103,7 +103,7 @@ int main(int argc, char** argv) {
       gettimeofday(&start, NULL);
     }
     
-    invert_matrix(eigensystem);
+    invert_matrix(&eigensystem);
     
     if (parameters.benchmark) {
       gettimeofday(&stop, NULL);
